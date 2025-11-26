@@ -3,29 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <title>SaltenSmolt Water Quality Dashboard</title>
+
   <link rel="stylesheet" href="style.css" />
+
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- PDF Export libs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
-    <div class="theme-toggle">
-        <label class="switch">
-          <input type="checkbox" id="darkModeToggle">
-          <span class="slider"></span>
-        </label>
-      </div>
-      
+
+  <!-- Dark mode toggle (top-right) -->
+  <div class="theme-toggle">
+    <label class="switch">
+      <input type="checkbox" id="darkModeToggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+
   <div class="container">
     <h1>SaltenSmolt – Water Quality Dashboard</h1>
 
     <div class="controls">
+
+      <!-- Production Area Dropdown -->
       <label>
         Production area:
         <select id="areaSelect">
-          <option value="PA7">PA7</option>
+          <!-- populated dynamically from /api/areas -->
         </select>
       </label>
 
+      <!-- Parameter selectors -->
       <div id="parameterControls">
+
         <div class="parameter-row">
           <label>
             Parameter 1:
@@ -105,23 +118,33 @@
             </select>
           </label>
         </div>
+
       </div>
 
+      <!-- Action buttons -->
       <button id="loadBtn">Load data</button>
+      <button id="pearsonBtn">Calculate Pearson R</button>
 
-      <button id="pearsonBtn">Calculate Pearson r</button>
+      <button id="importBtn">Import Excel</button>
+      <input type="file" id="importFile" accept=".xlsx,.xls,.csv" style="display:none" />
 
-      <label style="margin-left: 1rem;">
+      <button id="exportBtn">Export PDF</button>
+
+      <label>
         <input type="checkbox" id="toggleMean" />
         Show mean lines
       </label>
+
     </div>
 
+    <!-- Chart -->
     <div class="chart-container">
       <canvas id="waterChart"></canvas>
     </div>
 
-    <div id="statsBox" style="margin-top: 1rem; font-size: 0.9rem;"></div>
+    <!-- Pearson + stats output -->
+    <div id="statsBox"></div>
+
   </div>
 
   <script src="app.js"></script>

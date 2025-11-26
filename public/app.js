@@ -5,6 +5,10 @@ const pearsonBtn = document.getElementById("pearsonBtn");
 const toggleMean = document.getElementById("toggleMean");
 const statsBox = document.getElementById("statsBox");
 const ctx = document.getElementById("waterChart").getContext("2d");
+const darkModeToggle = document.getElementById("darkModeToggle");
+const importBtn = document.getElementById("importBtn");
+const importFile = document.getElementById("importFile");
+const exportBtn = document.getElementById("exportBtn");
 
 let chart;
 let currentLabels = null;      // array of date strings
@@ -144,6 +148,40 @@ function renderChart() {
   });
 }
 
+// ---------- Load areas from backend ----------
+
+async function loadAreas() {
+  try {
+    const res = await fetch("/api/areas");
+    const areas = await res.json();
+
+    areaSelect.innerHTML = "";
+
+    if (!Array.isArray(areas) || areas.length === 0) {
+      // Fallback if no areas from backend
+      const opt = document.createElement("option");
+      opt.value = "PA7";
+      opt.textContent = "PA7";
+      areaSelect.appendChild(opt);
+      return;
+    }
+
+    areas.forEach(a => {
+      const opt = document.createElement("option");
+      opt.value = a.code;
+      opt.textContent = a.name || a.code;
+      areaSelect.appendChild(opt);
+    });
+  } catch (err) {
+    console.error("Failed to load areas:", err);
+    // Fallback if error
+    const opt = document.createElement("option");
+    opt.value = "PA7";
+    opt.textContent = "PA7";
+    areaSelect.appendChild(opt);
+  }
+}
+
 // ---------- Data loading ----------
 
 async function loadData() {
@@ -259,6 +297,92 @@ function computePearsonForSelection() {
   statsBox.innerHTML = html;
 }
 
+// ---------- Import Excel ----------
+
+importBtn.addEventListener("click", () => {
+  importFile.click();
+});
+
+importFile.addEventListener("change", async () => {
+  const file = importFile.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const res = await fetch("/api/import", {
+      method: "POST",
+      body: formData
+    });
+
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || "Import failed");
+
+    alert(`Import completed. Inserted ${result.inserted || 0} rows.`);
+    await loadData();
+  } catch (err) {
+    console.error("Import error:", err);
+    alert("Import failed: " + err.message);
+  } finally {
+    importFile.value = "";
+  }
+});
+
+// ---------- Export PDF ----------
+
+exportBtn.addEventListener("click", async () => {
+  try {
+    const chartContainer = document.querySelector(".chart-container");
+    const stats = document.getElementById("statsBox");
+
+    if (!chartContainer) {
+      alert("No chart to export.");
+      return;
+    }
+
+    const { jsPDF } = window.jspdf;
+
+    const chartCanvas = await html2canvas(chartContainer);
+    const chartImgData = chartCanvas.toDataURL("image/png");
+
+    const statsCanvas = await html2canvas(stats);
+    const statsImgData = statsCanvas.toDataURL("image/png");
+
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pageWidth = pdf.internal.pageSize.getWidth();
+
+    const chartWidth = pageWidth - 20;
+    const chartHeight = (chartCanvas.height / chartCanvas.width) * chartWidth;
+
+    pdf.addImage(chartImgData, "PNG", 10, 10, chartWidth, chartHeight);
+
+    const statsY = 10 + chartHeight + 10;
+    const statsWidth = pageWidth - 20;
+    const statsHeight = (statsCanvas.height / statsCanvas.width) * statsWidth;
+
+    if (statsHeight > 0) {
+      if (statsY + statsHeight > pdf.internal.pageSize.getHeight()) {
+        pdf.addPage();
+        pdf.addImage(statsImgData, "PNG", 10, 10, statsWidth, statsHeight);
+      } else {
+        pdf.addImage(statsImgData, "PNG", 10, statsY, statsWidth, statsHeight);
+      }
+    }
+
+    pdf.save("salten_smolt_dashboard.pdf");
+  } catch (err) {
+    console.error("Export error:", err);
+    alert("Export failed: " + err.message);
+  }
+});
+
+// ---------- Dark mode toggle ----------
+
+darkModeToggle.addEventListener("change", () => {
+  document.body.classList.toggle("dark", darkModeToggle.checked);
+});
+
 // ---------- Event wiring ----------
 
 loadBtn.addEventListener("click", loadData);
@@ -267,14 +391,13 @@ toggleMean.addEventListener("change", () => {
   renderChart();
 });
 
-// Auto-load Temperature (preselected in Parameter 1) when page opens
-window.addEventListener("DOMContentLoaded", () => {
+// Auto-load: first load areas, then load data (Temperature is preselected)
+window.addEventListener("DOMContentLoaded", async () => {
+  await loadAreas();
+  await loadData();
+});
+
+// Auto reload when changing production area
+areaSelect.addEventListener("change", () => {
   loadData();
 });
-
-const darkModeToggle = document.getElementById("darkModeToggle");
-
-darkModeToggle.addEventListener("change", () => {
-  document.body.classList.toggle("dark", darkModeToggle.checked);
-});
-
