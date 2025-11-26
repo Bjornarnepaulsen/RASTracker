@@ -271,3 +271,10 @@ toggleMean.addEventListener("change", () => {
 window.addEventListener("DOMContentLoaded", () => {
   loadData();
 });
+
+const darkModeToggle = document.getElementById("darkModeToggle");
+
+darkModeToggle.addEventListener("change", () => {
+  document.body.classList.toggle("dark", darkModeToggle.checked);
+});
+
