@@ -1,6 +1,6 @@
 const areaSelect = document.getElementById("areaSelect");
-const parameterSelect = document.getElementById("parameterSelect");
 const loadBtn = document.getElementById("loadBtn");
+const parameterControls = document.getElementById("parameterControls");
 const ctx = document.getElementById("waterChart").getContext("2d");
 
 let chart;
@@ -8,11 +8,17 @@ let chart;
 async function loadData() {
   const area = areaSelect.value;
 
-  const selectedParams = Array.from(parameterSelect.selectedOptions)
-    .map(opt => opt.value);
+  const selects = parameterControls.querySelectorAll(".parameterSelect");
+
+  // Collect non-empty selections and remove duplicates
+  const selectedParams = [...new Set(
+    Array.from(selects)
+      .map(s => s.value)
+      .filter(v => v !== "")
+  )];
 
   if (selectedParams.length === 0) {
-    alert("Select at least one parameter");
+    alert("Select at least one parameter.");
     return;
   }
 
@@ -22,6 +28,12 @@ async function loadData() {
   const response = await fetch(url);
   const rawData = await response.json();
   console.log("Data from API:", rawData);
+
+  if (!Array.isArray(rawData) || rawData.length === 0) {
+    if (chart) chart.destroy();
+    alert("No data returned for the selected parameters.");
+    return;
+  }
 
   // Group by parameter
   const grouped = {};
@@ -36,7 +48,7 @@ async function loadData() {
 
   if (chart) chart.destroy();
 
-  const datasets = Object.keys(grouped).map((param, index) => ({
+  const datasets = Object.keys(grouped).map(param => ({
     label: param,
     data: grouped[param].map(row => row.value),
     borderWidth: 2,
@@ -78,8 +90,6 @@ async function loadData() {
   });
 }
 
-
 loadBtn.addEventListener("click", loadData);
 
-// Auto-load default view
 loadData();
