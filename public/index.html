@@ -9,6 +9,9 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <!-- Zoom plugin -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.umd.min.js"></script>
+
   <!-- PDF Export libs -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -26,125 +29,160 @@
   <div class="container">
     <h1>SaltenSmolt – Water Quality Dashboard</h1>
 
+    <!-- Top control bar: left (area + params), right (buttons) -->
     <div class="controls">
+      <!-- LEFT: Area + parameters -->
+      <div class="controls-left">
+        <!-- Production Area Dropdown -->
+        <label>
+          Production area:
+          <select id="areaSelect">
+            <!-- populated dynamically from /api/areas -->
+          </select>
+        </label>
 
-      <!-- Production Area Dropdown -->
-      <label>
-        Production area:
-        <select id="areaSelect">
-          <!-- populated dynamically from /api/areas -->
-        </select>
-      </label>
+        <!-- Parameter selectors -->
+        <div id="parameterControls">
+          <div class="parameter-row">
+            <label>
+              Parameter 1:
+              <select class="parameterSelect">
+                <option value="">-- select --</option>
+                <option value="Temperature" selected>Temperature</option>
+                <option value="pH">pH</option>
+                <option value="NH4-N">NH4-N</option>
+                <option value="NO2-N">NO2-N</option>
+                <option value="NO3-N">NO3-N</option>
+                <option value="Alkalinity">Alkalinity</option>
+                <option value="Salinity">Salinity</option>
+                <option value="Turbidity">Turbidity</option>
+                <option value="Feeding rate">Feeding rate</option>
+                <option value="Dilution water">Dilution water</option>
+                <option value="System volume">System volume</option>
+              </select>
+            </label>
+          </div>
 
-      <!-- Parameter selectors -->
-      <div id="parameterControls">
+          <div class="parameter-row">
+            <label>
+              Parameter 2:
+              <select class="parameterSelect">
+                <option value="">-- select --</option>
+                <option value="Temperature">Temperature</option>
+                <option value="pH">pH</option>
+                <option value="NH4-N">NH4-N</option>
+                <option value="NO2-N">NO2-N</option>
+                <option value="NO3-N">NO3-N</option>
+                <option value="Alkalinity">Alkalinity</option>
+                <option value="Salinity">Salinity</option>
+                <option value="Turbidity">Turbidity</option>
+                <option value="Feeding rate">Feeding rate</option>
+                <option value="Dilution water">Dilution water</option>
+                <option value="System volume">System volume</option>
+              </select>
+            </label>
+          </div>
 
-        <div class="parameter-row">
-          <label>
-            Parameter 1:
-            <select class="parameterSelect">
-              <option value="">-- select --</option>
-              <option value="Temperature" selected>Temperature</option>
-              <option value="pH">pH</option>
-              <option value="NH4-N">NH4-N</option>
-              <option value="NO2-N">NO2-N</option>
-              <option value="NO3-N">NO3-N</option>
-              <option value="Alkalinity">Alkalinity</option>
-              <option value="Salinity">Salinity</option>
-              <option value="Turbidity">Turbidity</option>
-              <option value="Feeding rate">Feeding rate</option>
-              <option value="Dilution water">Dilution water</option>
-              <option value="System volume">System volume</option>
-            </select>
-          </label>
+          <div class="parameter-row">
+            <label>
+              Parameter 3:
+              <select class="parameterSelect">
+                <option value="">-- select --</option>
+                <option value="Temperature">Temperature</option>
+                <option value="pH">pH</option>
+                <option value="NH4-N">NH4-N</option>
+                <option value="NO2-N">NO2-N</option>
+                <option value="NO3-N">NO3-N</option>
+                <option value="Alkalinity">Alkalinity</option>
+                <option value="Salinity">Salinity</option>
+                <option value="Turbidity">Turbidity</option>
+                <option value="Feeding rate">Feeding rate</option>
+                <option value="Dilution water">Dilution water</option>
+                <option value="System volume">System volume</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="parameter-row">
+            <label>
+              Parameter 4:
+              <select class="parameterSelect">
+                <option value="">-- select --</option>
+                <option value="Temperature">Temperature</option>
+                <option value="pH">pH</option>
+                <option value="NH4-N">NH4-N</option>
+                <option value="NO2-N">NO2-N</option>
+                <option value="NO3-N">NO3-N</option>
+                <option value="Alkalinity">Alkalinity</option>
+                <option value="Salinity">Salinity</option>
+                <option value="Turbidity">Turbidity</option>
+                <option value="Feeding rate">Feeding rate</option>
+                <option value="Dilution water">Dilution water</option>
+                <option value="System volume">System volume</option>
+              </select>
+            </label>
+          </div>
         </div>
-
-        <div class="parameter-row">
-          <label>
-            Parameter 2:
-            <select class="parameterSelect">
-              <option value="">-- select --</option>
-              <option value="Temperature">Temperature</option>
-              <option value="pH">pH</option>
-              <option value="NH4-N">NH4-N</option>
-              <option value="NO2-N">NO2-N</option>
-              <option value="NO3-N">NO3-N</option>
-              <option value="Alkalinity">Alkalinity</option>
-              <option value="Salinity">Salinity</option>
-              <option value="Turbidity">Turbidity</option>
-              <option value="Feeding rate">Feeding rate</option>
-              <option value="Dilution water">Dilution water</option>
-              <option value="System volume">System volume</option>
-            </select>
-          </label>
-        </div>
-
-        <div class="parameter-row">
-          <label>
-            Parameter 3:
-            <select class="parameterSelect">
-              <option value="">-- select --</option>
-              <option value="Temperature">Temperature</option>
-              <option value="pH">pH</option>
-              <option value="NH4-N">NH4-N</option>
-              <option value="NO2-N">NO2-N</option>
-              <option value="NO3-N">NO3-N</option>
-              <option value="Alkalinity">Alkalinity</option>
-              <option value="Salinity">Salinity</option>
-              <option value="Turbidity">Turbidity</option>
-              <option value="Feeding rate">Feeding rate</option>
-              <option value="Dilution water">Dilution water</option>
-              <option value="System volume">System volume</option>
-            </select>
-          </label>
-        </div>
-
-        <div class="parameter-row">
-          <label>
-            Parameter 4:
-            <select class="parameterSelect">
-              <option value="">-- select --</option>
-              <option value="Temperature">Temperature</option>
-              <option value="pH">pH</option>
-              <option value="NH4-N">NH4-N</option>
-              <option value="NO2-N">NO2-N</option>
-              <option value="NO3-N">NO3-N</option>
-              <option value="Alkalinity">Alkalinity</option>
-              <option value="Salinity">Salinity</option>
-              <option value="Turbidity">Turbidity</option>
-              <option value="Feeding rate">Feeding rate</option>
-              <option value="Dilution water">Dilution water</option>
-              <option value="System volume">System volume</option>
-            </select>
-          </label>
-        </div>
-
       </div>
+      <div class="center-slot">
+        <!-- Pearson + stats output -->
+        <div id="statsBox"></div>
+      </div>
+      <!-- RIGHT: buttons stacked -->
+      <div class="controls-right">
+        <button id="loadBtn">Load data</button>
+        <button id="pearsonBtn">Calculate Pearson R</button>
 
-      <!-- Action buttons -->
-      <button id="loadBtn">Load data</button>
-      <button id="pearsonBtn">Calculate Pearson R</button>
+   
 
-      <button id="importBtn">Import Excel</button>
-      <input type="file" id="importFile" accept=".xlsx,.xls,.csv" style="display:none" />
+        <!--<button id="resetZoomBtn">Reset zoom</button>-->
+        <button id="importBtn">Import Excel</button>
+        <input type="file" id="importFile" accept=".xlsx,.xls,.csv" style="display:none" />
+        <button id="exportBtn">Export PDF</button>
+        <button id="datePckrBtn">Select date range</button>
+      </div>
+    </div>
 
-      <button id="exportBtn">Export PDF</button>
+    <!-- Date range popup -->
+<div id="dateRangePopup" class="date-popup hidden">
+    <div class="date-popup-content">
+      <div class="date-popup-row">
+        <label>
+          From:
+          <input type="date" id="fromDateInput" />
+        </label>
+      </div>
+      <div class="date-popup-row">
+        <label>
+          To:
+          <input type="date" id="toDateInput" />
+        </label>
+      </div>
+      <div class="date-popup-actions">
+        <button id="applyDateRangeBtn">Apply</button>
+        <button id="cancelDateRangeBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+  
 
+    <!-- Chart options (centered above the graph) -->
+    <div class="chart-options">
       <label>
         <input type="checkbox" id="toggleMean" />
         Show mean lines
       </label>
-
+      <label>
+        <input type="checkbox" id="toggleAnomalies" />
+        Highlight anomalies
+      </label>
     </div>
+    
 
     <!-- Chart -->
     <div class="chart-container">
       <canvas id="waterChart"></canvas>
     </div>
-
-    <!-- Pearson + stats output -->
-    <div id="statsBox"></div>
-
   </div>
 
   <script src="app.js"></script>

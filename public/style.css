@@ -32,26 +32,49 @@ body {
     margin-bottom: 20px;
   }
   
-  /* ---------- Controls ---------- */
+  /* ---------- Controls layout ---------- */
   
   .controls {
     display: flex;
-    flex-wrap: wrap;
-    gap: 12px 20px;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+    margin-bottom: 16px;
   }
   
-  .parameter-row {
-    margin-top: 4px;
+  /* Left side: area + parameters stacked */
+  .controls-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
   }
   
-  label {
+  /* Parameter rows under each other */
+  #parameterControls {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .parameter-row label {
     font-size: 0.9rem;
   }
   
-  /* Inputs + buttons */
+  /* Right side: buttons stacked */
+  .controls-right {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-end;
+  }
+  
+  /* Make buttons similar width for neatness */
+  .controls-right button {
+    min-width: 140px;
+  }
+  
+  /* ---------- Inputs & buttons ---------- */
   
   select,
   button {
@@ -82,8 +105,21 @@ body {
     background: #111827;
   }
   
-  /* Checkbox label consistency */
-  .controls input[type="checkbox"] {
+  /* ---------- Chart options (checkboxes above graph) ---------- */
+  
+  .chart-options {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  
+  .chart-options label {
+    font-size: 0.9rem;
+  }
+  
+  .chart-options input[type="checkbox"] {
     vertical-align: middle;
   }
   
@@ -108,21 +144,26 @@ body {
   
   /* ---------- Stats / Pearson table ---------- */
   
-  #statsBox {
-    text-align: center;
-    margin-top: 10px;
+  /* ---------- Stats / Pearson output (now in controls-right) ---------- */
+
+#statsBox {
+    margin-top: 6px;
+    font-size: 0.8rem;
+    text-align: left;
+    max-width: 260px;
   }
   
   #statsBox table {
-    margin: 10px auto;
+    margin-top: 6px;
     border-collapse: collapse;
+    width: 100%;
   }
   
   #statsBox th,
   #statsBox td {
     border: 1px solid #ddd;
-    padding: 6px 10px;
-    font-size: 0.85rem;
+    padding: 4px 6px;
+    font-size: 0.75rem;
   }
   
   #statsBox th {
@@ -138,6 +179,7 @@ body {
     background: #1e293b;
   }
   
+  
   /* ---------- Dark mode toggle (top-right) ---------- */
   
   .theme-toggle {
@@ -147,7 +189,6 @@ body {
     z-index: 1000;
   }
   
-  /* Switch container */
   .switch {
     position: relative;
     display: inline-block;
@@ -155,14 +196,12 @@ body {
     height: 26px;
   }
   
-  /* Hide checkbox */
   .switch input {
     opacity: 0;
     width: 0;
     height: 0;
   }
   
-  /* Slider background */
   .slider {
     position: absolute;
     cursor: pointer;
@@ -172,7 +211,6 @@ body {
     border-radius: 34px;
   }
   
-  /* Slider knob */
   .slider:before {
     position: absolute;
     content: "🌙";
@@ -189,7 +227,6 @@ body {
     font-size: 12px;
   }
   
-  /* Checked state */
   input:checked + .slider {
     background-color: #4f46e5;
   }
@@ -198,4 +235,62 @@ body {
     transform: translateX(26px);
     content: "☀️";
   }
+  .hidden {
+    display: none;
+  }
+  
+  .date-popup {
+    position: fixed;
+    top: 80px;
+    right: 40px;
+    z-index: 900;
+  }
+  
+  .date-popup-content {
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 10px 12px;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+    min-width: 220px;
+    font-size: 0.85rem;
+  }
+  
+  .date-popup-row {
+    margin-bottom: 6px;
+  }
+  
+  .date-popup-content label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .date-popup-content input[type="date"] {
+    flex: 1;
+    padding: 4px 6px;
+    border-radius: 4px;
+    border: 1px solid #cbd5e1;
+    font-size: 0.85rem;
+  }
+  
+  .date-popup-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  
+  body.dark .date-popup-content {
+    background: #0f172a;
+    border-color: #334155;
+  }
+  
+  body.dark .date-popup-content input[type="date"] {
+    background: #1e293b;
+    border-color: #475569;
+    color: #e5e7eb;
+  }
+  
   

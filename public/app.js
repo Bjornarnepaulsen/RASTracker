@@ -9,7 +9,19 @@ const darkModeToggle = document.getElementById("darkModeToggle");
 const importBtn = document.getElementById("importBtn");
 const importFile = document.getElementById("importFile");
 const exportBtn = document.getElementById("exportBtn");
+const resetZoomBtn = document.getElementById("resetZoomBtn");
+const toggleAnomalies = document.getElementById("toggleAnomalies");
+const datePckrBtn = document.getElementById("datePckrBtn");
+const dateRangePopup = document.getElementById("dateRangePopup");
+const fromDateInput = document.getElementById("fromDateInput");
+const toDateInput = document.getElementById("toDateInput");
+const applyDateRangeBtn = document.getElementById("applyDateRangeBtn");
+const cancelDateRangeBtn = document.getElementById("cancelDateRangeBtn");
 
+
+
+let selectedFromDate = null;
+let selectedToDate = null;
 let chart;
 let currentLabels = null;      // array of date strings
 let currentGrouped = null;     // { parameterName: [ { measured_at, value }, ... ] }
@@ -23,6 +35,15 @@ function computeMean(series) {
   const sum = valid.reduce((a, b) => a + b, 0);
   return sum / valid.length;
 }
+function computeStd(series) {
+    const valid = series.filter(v => v !== null && !Number.isNaN(v));
+    const n = valid.length;
+    if (n < 2) return null;
+    const mean = computeMean(valid);
+    const variance = valid.reduce((acc, v) => acc + Math.pow(v - mean, 2), 0) / (n - 1);
+    return Math.sqrt(variance);
+  }
+  
 
 // Build aligned series for given parameter over currentLabels
 function buildSeriesForParam(param) {
@@ -86,7 +107,7 @@ function renderChart() {
 
   params.forEach(param => {
     const series = buildSeriesForParam(param);
-
+  
     // main line
     datasets.push({
       label: param,
@@ -94,7 +115,7 @@ function renderChart() {
       borderWidth: 2,
       tension: 0.2
     });
-
+  
     // optional mean line
     if (toggleMean.checked) {
       const mean = computeMean(series);
@@ -109,9 +130,32 @@ function renderChart() {
         });
       }
     }
+  
+    // optional anomaly highlighting
+    if (toggleAnomalies.checked) {
+      const mean = computeMean(series);
+      const std = computeStd(series);
+      if (mean !== null && std !== null && std > 0) {
+        const anomalySeries = series.map(v => {
+          if (v === null || Number.isNaN(v)) return null;
+          const z = Math.abs((v - mean) / std);
+          return z > 2.5 ? v : null;
+        });
+  
+        datasets.push({
+          label: `${param} anomalies`,
+          data: anomalySeries,
+          borderWidth: 0,
+          pointRadius: 5,
+          showLine: false
+        });
+      }
+    }
   });
+  
 
   if (chart) chart.destroy();
+
 
   chart = new Chart(ctx, {
     type: "line",
@@ -128,6 +172,21 @@ function renderChart() {
       plugins: {
         legend: {
           position: "top"
+        },
+        zoom: {
+          zoom: {
+            wheel: {
+              enabled: true
+            },
+            pinch: {
+              enabled: true
+            },
+            mode: "x"
+          },
+          pan: {
+            enabled: true,
+            mode: "x"
+          }
         }
       },
       scales: {
@@ -146,6 +205,7 @@ function renderChart() {
       }
     }
   });
+  
 }
 
 // ---------- Load areas from backend ----------
@@ -297,6 +357,49 @@ function computePearsonForSelection() {
   statsBox.innerHTML = html;
 }
 
+// ---------- Date picker ----------
+datePckrBtn.addEventListener("click", () => {
+    // Prefill with current selection or full range if we know labels
+    if (selectedFromDate) {
+      fromDateInput.value = selectedFromDate;
+    } else if (currentLabels && currentLabels.length > 0) {
+      fromDateInput.value = currentLabels[0];
+    } else {
+      fromDateInput.value = "";
+    }
+  
+    if (selectedToDate) {
+      toDateInput.value = selectedToDate;
+    } else if (currentLabels && currentLabels.length > 0) {
+      toDateInput.value = currentLabels[currentLabels.length - 1];
+    } else {
+      toDateInput.value = "";
+    }
+  
+    dateRangePopup.classList.remove("hidden");
+  });
+  
+  cancelDateRangeBtn.addEventListener("click", () => {
+    dateRangePopup.classList.add("hidden");
+  });
+  
+  applyDateRangeBtn.addEventListener("click", async () => {
+    const from = fromDateInput.value || null;
+    const to = toDateInput.value || null;
+  
+    if (from && to && from > to) {
+      alert("Start date must be before end date.");
+      return;
+    }
+  
+    selectedFromDate = from;
+    selectedToDate = to;
+  
+    dateRangePopup.classList.add("hidden");
+    await loadData();
+  });
+  
+
 // ---------- Import Excel ----------
 
 importBtn.addEventListener("click", () => {
@@ -401,3 +504,10 @@ window.addEventListener("DOMContentLoaded", async () => {
 areaSelect.addEventListener("change", () => {
   loadData();
 });
+
+resetZoomBtn.addEventListener("click", () => {
+    if (chart && chart.resetZoom) {
+      chart.resetZoom();
+    }
+  });
+  
